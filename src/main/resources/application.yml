@@ -1,0 +1,121 @@
+spring:
+  application:
+    name: hachimi-agent
+  profiles:
+    active: local
+
+  # 主数据源 - MySQL (保持原有配置路径，对话存储)
+  datasource:
+    url: 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+
+    # 向量数据源 - PostgreSQL (RAG知识库)
+    vector:
+      url: 
+      driver-class-name: org.postgresql.Driver
+  ai:
+    dashscope:
+      embedding:
+        enabled: false
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: qwen3:0.6b
+      embedding:
+        enabled: false
+
+
+    vectorstore:
+      pgvector:
+        index-type: HNSW                   # 向量索引类型
+        distance-type: COSINE_DISTANCE     # 距离计算方式
+        max-document-batch-size: 10000     # 批处理大小
+    mcp:
+      client:
+        enabled: true
+        request-timeout: 30s
+        type: SYNC  # or ASYNC for reactive applications
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:910
+  sql:
+    init:
+      mode: always                          # 总是执行初始化
+      schema-locations: classpath:sql/schema.sql
+      encoding: utf-8
+      separator: ;
+      continue-on-error: false
+
+
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    cache-enabled: true
+    local-cache-scope: statement
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  # 指定 mapper xml 文件位置
+  mapper-locations: classpath:mapper/*.xml
+  # 指定实体类包路径
+  type-aliases-package: com.hachimi.hachimiagent.entity
+
+logging:
+  level:
+    # 完全关闭MyBatis相关日志
+    org.apache.ibatis: OFF
+    org.mybatis: OFF
+    com.baomidou.mybatisplus: WARN
+
+    # 关闭Spring JDBC和事务日志
+    org.springframework.jdbc: WARN
+    org.springframework.transaction: WARN
+
+    # 关闭数据库连接池详细日志
+    com.alibaba.druid: WARN
+    com.zaxxer.hikari: WARN
+
+    # Spring框架日志
+    org.springframework: INFO
+    org.springframework.boot: INFO
+    com.hachimi.hachimiagent: INFO
+    com.hachimi.hachimiagent.mapper: INFO
+    org.springframework.ai: INFO
+
+
+server:
+  port: 8123
+  servlet:
+    #访问路径前缀
+    context-path: /api
+
+# 搜索API配置
+search-api:
+  api-key:
+
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.hachimi.hachimiagent.controller
+
+# knife4j的增强配置
+knife4j:
+  enable: false
+  setting:
+    language: zh_cn
